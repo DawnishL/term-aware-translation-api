@@ -49,3 +49,6 @@ class TranslateResponse(BaseModel):
     translation: str = Field(..., description="按术语约束生成的译文")
     must_use: list[TermHit] = Field(..., description="要求模型必须使用的术语")
     reference: list[TermHit] = Field(..., description="提供给模型的参考术语")
+    adherence: float = Field(..., ge=0, le=1, description="术语遵循率，用上的必须使用术语占全部的比例")
+    retries: int = Field(..., ge=0, description="重译次数，0 表示第一次就全部用上")
+    missing: list[TermHit] = Field(..., description="最终译文中仍然漏用的必须使用术语")
