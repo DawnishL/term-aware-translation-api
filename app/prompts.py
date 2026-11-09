@@ -15,40 +15,54 @@ def format_terms(hits: list[TermHit]) -> str:
     lines = [f"- {hit.source} -> {hit.target}" for hit in hits]
     return "\n".join(lines)
 
-def build_user_prompt(text: str, must_use: list[TermHit], reference: list[TermHit]) -> str:
-    """把原文和两组术语组装成发给模型的用户消息。"""
+def build_context(text: str, must_use: list[TermHit], reference: list[TermHit]) -> str:
     return (
         f"必须使用的术语：\n{format_terms(must_use)}\n\n"
         f"参考术语：\n{format_terms(reference)}\n\n"
-        f"原文：\n{text}\n\n"
-        "译文："
+        f"原文：\n{text}"
     )
 
+def build_user_prompt(text: str, must_use: list[TermHit], reference: list[TermHit]) -> str:
+    """把原文和两组术语组装成发给模型的用户消息。"""
+    return f"{build_context(text, must_use, reference)}\n\n译文："
+
+def build_retry_prompt(text: str, 
+                       must_use: list[TermHit], 
+                       reference: list[TermHit], 
+                       previous_translation: str, 
+                       missing: list[TermHit]) -> str:
+    """重译时发给模型的用户消息，附上上一次的译文和漏用的术语。"""
+    return (
+        f"{build_context(text, must_use, reference)}\n\n"
+        f"上一次的译文：\n{previous_translation}\n\n"
+        "上一次的译文漏用了以下必须使用的术语。"
+        "请在保持原意和通顺的前提下修改译文，确保使用这些译法：\n"
+        f"{format_terms(missing)}\n\n"
+        "修改后的译文："
+    )
+    
+
 if __name__ == "__main__":
+    from app.checking import find_missing_terms
     from app.config import get_settings
-    from app.retrieval.service import get_retrieval_service
     from app.llm import OllamaClient
 
-    retrieval = get_retrieval_service()
-    client = OllamaClient(get_settings())
-    sentences = [
-        "Press and hold the power button to restart the control hub.",
-        "Replace the ear tips if they no longer fit.",
-        "This device has an IP rating of IP67.",
+    text = "Press and hold the power button to restart the control hub."
+    must_use = [
+        TermHit(source="power button", target="开关键", match_type="exact"),
+        TermHit(source="control hub", target="多功能网关", match_type="exact"),
     ]
+    reference: list[TermHit] = []
+    previous = "长按电源按钮以重启控制中枢。"
 
-    first = retrieval.search(sentences[0], top_k=5)
-    print("===== 第一句发给模型的用户消息 =====")
-    print(build_user_prompt(sentences[0], first.must_use, first.reference))
+    missing = find_missing_terms(previous, must_use)
+    retry_prompt = build_retry_prompt(text, must_use, reference, previous, missing)
+
+    print("===== 重译时发给模型的用户消息 =====")
+    print(retry_prompt)
     print()
 
-    for text in sentences:
-        result = retrieval.search(text, top_k=5)
-        plain = client.chat(system=SYSTEM_PROMPT, user=f"原文：\n{text}\n\n译文：")
-        with_terms = client.chat(SYSTEM_PROMPT, 
-                            build_user_prompt(text, result.must_use, result.reference))
-
-        print("原文　　", text)
-        print("无术语　", plain)
-        print("有术语　", with_terms)
-        print()
+    client = OllamaClient(get_settings())
+    revised = client.chat(system=SYSTEM_PROMPT, user=retry_prompt)
+    print(revised)
+    print("仍然漏掉：", [term.target for term in find_missing_terms(revised, must_use)])
