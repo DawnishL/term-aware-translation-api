@@ -1,0 +1,12 @@
+Press the power button to wake the device from standby mode, then press the multi-function button to answer a call.
+If the control hub cannot connect, reset it, restore factory settings, and install the latest firmware update.
+When the device is fully charged, the charging indicator turns green and the speaker plays a short sound.
+Use only the original power adapter, and check that the rated voltage matches your power supply and the operating temperature is between 0 and 40 °C.
+The light sensor adjusts the screen brightness, and infrared night vision turns on automatically when the lens detects low light.
+Scan the QR code to pair the control hub, then press the power button and wait until the breathing light stops blinking.
+In standby mode, the breathing light stays off, the speaker is muted, and the screen brightness is reduced to save energy.
+To reset the camera, hold the power button and the multi-function button together until the charging indicator blinks, then clean the lens.
+After a firmware update, restore factory settings only if the control hub, the light sensor, or infrared night vision does not work properly.
+Do not charge the device with a damaged power adapter or a power supply above the rated voltage, and unplug it once it is fully charged.
+Press the multi-function button twice to answer a call, and adjust the speaker volume and screen brightness in the app.
+Keep the lens clean, the QR code visible, and the device within its operating temperature, otherwise the light sensor and infrared night vision may fail.
