@@ -12,11 +12,11 @@ def find_missing_terms(translation: str, must_use: list[TermHit]) -> list[TermHi
 
     return missing
 
-def adherence_rate(missing: list[TermHit], must_use: list[TermHit]) -> float:
+def adherence_rate(must_use: list[TermHit], missing: list[TermHit]) -> float:
+    """术语遵循率，用上的必须使用术语占全部的比例。"""
     if not must_use:
         return 1.0
     used = len(must_use) - len(missing)
-
     return used / len(must_use)
 
 if __name__ == "__main__":
